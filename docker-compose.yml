@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  mysqldb:
+    image: mysql:8.2.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: admin
+    volumes:
+      - ".data:/var/lib/mysql"
+      - "./scripts/schema.sql:/docker-entrypoint-initdb.d/1.sql"
+    command: --innodb-buffer-pool-size=6GB --innodb_flush_log_at_trx_commit=0
+    #command: --max_heap_table_size=6GB           for mysql with memory engine
+
+
+  web-app:
+    build: ./web-app
+    ports:
+      - '8080:8080'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:3306/test?allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=admin
+    depends_on:
+      - mysqldb
+    volumes:
+      - .m2:/root/.m2
+
+volumes:
+  data-volume:
